@@ -1,0 +1,38 @@
+1.先要在struts中配置 将spring的配置文件加载进actionservlet总控中以便等会进行使用 这样可以避免在web.xml下进行配置
+ <plug-in className="org.springframework.web.struts.ContextLoaderPlugIn">
+  <set-property property="contextConfigLocation" value="/WEB-INF/applicationContext.xml"/>
+ </plug-in>
+
+2.然后有三种方式，一种是继承actionsupport，另一种是使用DelegatingRequestProcessor进行配置，
+最后一种是使用DelegatingAcionProxy，官方推荐最后一种
+
+3.我们倾向于最后一种实现模式然后开始编写actionform,action
+
+4.在编写完毕之后，我们进行struts配置文件 struts-config.xml的编写
+
+5.首先编写actionform,样例如下
+<form-beans >
+ <form-bean name="UserForm" type="com.stu.web.form.UserForm"></form-bean>
+</form-beans>
+
+6.然后我们编写action,跟普通action略有不同，有几点需要注意
+<action path="/login"      
+<!--type，因为我们使用的是第三种实现模式，所以我们将type定为DelegatingActionProxy-->
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       name="UserForm">
+      <forward name="success" path="/success.jsp"></forward>
+</action>
+<!--我们还要记住path，因为一会还要用到这个路径-->
+
+这样一个最简单的action就算配置完毕了
+
+7.现在我们转向spring的配置
+  <bean name="/login" class="com.stu.web.action.LoginAction"></bean>
+  在这里的name因为bean的id不支持"/"，所以我们使用name来进行配置
+  在这里要跟上面struts的配置进行对比，
+  spring中的name="/login" struts中的path="/login"
+  两个相同是因为我们要用spring中的LoginAction定义，来取代struts的管理,
+  然后使用DelegatingActionProxy来对struts的action进行代理
+
+8.最后我们写好输入和输出的jsp即可
+参考：http://blog.csdn.NET/caoyinghui1986/article/details/2501914
